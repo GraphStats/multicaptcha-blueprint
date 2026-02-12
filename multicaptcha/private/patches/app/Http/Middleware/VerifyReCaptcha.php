@@ -32,7 +32,7 @@ class VerifyReCaptcha
             return $next($request);
         }
 
-        if ($request->filled('g-recaptcha-response') || $request->filled('cf-turnstile-response')) {
+        if ($request->filled('g-recaptcha-response') || $request->filled('cf-turnstile-response') || $request->filled('recaptchaData')) {
             foreach ($this->providerOrder() as $provider) {
                 $verification = $this->verifyWithProvider($provider, $request);
                 $result = $verification['result'];
@@ -129,6 +129,7 @@ class VerifyReCaptcha
         $token = (string) (
             $request->input('g-recaptcha-response')
             ?? $request->input('cf-turnstile-response')
+            ?? $request->input('recaptchaData')
             ?? ''
         );
 
