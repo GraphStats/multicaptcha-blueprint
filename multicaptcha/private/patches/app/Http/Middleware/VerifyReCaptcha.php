@@ -45,8 +45,8 @@ class VerifyReCaptcha
 
             Log::debug("VerifyReCaptcha: Request contains token (len: " . strlen($token) . "). Starting verification for provider: {$provider}");
             Log::debug("VerifyReCaptcha: Config Check", [
-                'site_key_starts' => substr($websiteKey, 0, 7) . '...',
-                'secret_key_starts' => substr($secretKey, 0, 7) . '...',
+                'site_key_starts' => substr($websiteKey, 0, 15) . '...',
+                'secret_key_starts' => substr($secretKey, 0, 15) . '...',
             ]);
             Log::debug("VerifyReCaptcha: Verification URL: " . $this->resolveDomain($provider));
 
