@@ -40,3 +40,4 @@ jobs:
           name: ${{ steps.version.outputs.version }}
           files: multicaptcha.blueprint
           generate_release_notes: true
+
