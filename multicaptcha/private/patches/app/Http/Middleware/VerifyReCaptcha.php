@@ -11,6 +11,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Log;
 
 class VerifyReCaptcha
 {
@@ -33,14 +34,35 @@ class VerifyReCaptcha
         }
 
         if ($request->filled('g-recaptcha-response') || $request->filled('cf-turnstile-response') || $request->filled('recaptchaData')) {
+            Log::debug('VerifyReCaptcha: Request contains CAPTCHA token.', [
+                'has_g-recaptcha-response' => $request->filled('g-recaptcha-response'),
+                'has_cf-turnstile-response' => $request->filled('cf-turnstile-response'),
+                'has_recaptchaData' => $request->filled('recaptchaData'),
+                'ip' => $request->ip(),
+                'host' => $request->getHost(),
+            ]);
+
             foreach ($this->providerOrder() as $provider) {
+                Log::debug("VerifyReCaptcha: Attempting verification with provider: {$provider}");
+                
                 $verification = $this->verifyWithProvider($provider, $request);
                 $result = $verification['result'];
+
+                Log::debug("VerifyReCaptcha: Verification result for {$provider}", [
+                    'success' => $verification['success'],
+                    'result' => $result,
+                    'secret_starts_with' => substr($this->config->get('recaptcha.secret_key'), 0, 5) . '...',
+                ]);
 
                 if ($verification['success']) {
                     return $next($request);
                 }
             }
+        } else {
+            Log::warning('VerifyReCaptcha: Validation required but no token found in request.', [
+                'headers' => $request->headers->all(),
+                'input_keys' => array_keys($request->all()),
+            ]);
         }
 
         $this->dispatcher->dispatch(
