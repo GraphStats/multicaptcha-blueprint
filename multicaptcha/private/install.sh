@@ -18,6 +18,8 @@ FILES=(
   "resources/scripts/components/auth/LoginContainer.tsx"
   "resources/scripts/components/auth/ForgotPasswordContainer.tsx"
   "resources/scripts/components/elements/CaptchaWidget.tsx"
+  "resources/scripts/api/auth/login.ts"
+  "resources/scripts/api/auth/requestPasswordResetEmail.ts"
 )
 
 echo "[multicaptcha] Applying panel patches..."
