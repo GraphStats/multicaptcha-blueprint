@@ -3,7 +3,7 @@ info:
   identifier: "multicaptcha"
   description: "Adds Google reCAPTCHA, Cloudflare Turnstile, and hCaptcha support to Pterodactyl auth."
   flags: ""
-  version: "0.8.4"
+  version: "0.8.5"
   target: "beta-2026-01"
   author: "Drayko"
   icon: ""
