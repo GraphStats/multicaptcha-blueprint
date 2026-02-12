@@ -11,7 +11,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Illuminate\Support\Facades\Log;
+
 
 class VerifyReCaptcha
 {
