@@ -1,0 +1,42 @@
+name: Release Blueprint
+
+on:
+  push:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    if: startsWith(github.event.head_commit.message, 'new:')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read extension version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(awk -F'"' '/^[[:space:]]*version:[[:space:]]*"/ { print $2; exit }' multicaptcha/conf.yml)"
+          if [[ -z "$VERSION" ]]; then
+            echo "Could not read version from multicaptcha/conf.yml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Build .blueprint
+        shell: bash
+        run: |
+          cd multicaptcha
+          zip -r ../multicaptcha.blueprint . -x ".git/*" ".dist/*" ".gitkeep"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          files: multicaptcha.blueprint
+          generate_release_notes: true

@@ -1,0 +1,7 @@
+*.blueprint
+*.zip
+_bp_framework/
+_bp_framework_fix/
+_bp_templates/
+_pterodactyl_panel/
+_tmp_panel2/
