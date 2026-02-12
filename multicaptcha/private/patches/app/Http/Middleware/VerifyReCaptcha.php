@@ -40,7 +40,14 @@ class VerifyReCaptcha
 
         if (!empty($token)) {
             $provider = $this->resolveProvider();
+            $secretKey = trim((string) $this->config->get('recaptcha.secret_key'));
+            $websiteKey = trim((string) $this->config->get('recaptcha.website_key'));
+
             Log::debug("VerifyReCaptcha: Request contains token (len: " . strlen($token) . "). Starting verification for provider: {$provider}");
+            Log::debug("VerifyReCaptcha: Config Check", [
+                'site_key_starts' => substr($websiteKey, 0, 7) . '...',
+                'secret_key_starts' => substr($secretKey, 0, 7) . '...',
+            ]);
             Log::debug("VerifyReCaptcha: Verification URL: " . $this->resolveDomain($provider));
 
             $verification = $this->verifyWithProvider($provider, $request);
@@ -153,7 +160,7 @@ class VerifyReCaptcha
         );
 
         $params = [
-            'secret' => $this->config->get('recaptcha.secret_key'),
+            'secret' => trim((string) $this->config->get('recaptcha.secret_key')),
             'response' => $token,
         ];
 
