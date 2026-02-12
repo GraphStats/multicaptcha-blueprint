@@ -27,43 +27,50 @@ class VerifyReCaptcha
      */
     public function handle(Request $request, \Closure $next): mixed
     {
-        $result = null;
-
         if (!$this->config->get('recaptcha.enabled')) {
             return $next($request);
         }
 
-        if ($request->filled('g-recaptcha-response') || $request->filled('cf-turnstile-response') || $request->filled('recaptchaData')) {
-            Log::debug('VerifyReCaptcha: Request contains CAPTCHA token.', [
-                'has_g-recaptcha-response' => $request->filled('g-recaptcha-response'),
-                'has_cf-turnstile-response' => $request->filled('cf-turnstile-response'),
-                'has_recaptchaData' => $request->filled('recaptchaData'),
-                'ip' => $request->ip(),
-                'host' => $request->getHost(),
+        $token = (string) (
+            $request->input('recaptchaData')
+            ?? $request->input('cf-turnstile-response')
+            ?? $request->input('g-recaptcha-response')
+            ?? ''
+        );
+
+        if (!empty($token)) {
+            $provider = $this->resolveProvider();
+            Log::debug("VerifyReCaptcha: Request contains token (len: " . strlen($token) . "). Starting verification for provider: {$provider}");
+            Log::debug("VerifyReCaptcha: Verification URL: " . $this->resolveDomain($provider));
+
+            $verification = $this->verifyWithProvider($provider, $request);
+            $result = $verification['result'];
+
+            Log::debug("VerifyReCaptcha: Verification result for {$provider}", [
+                'success' => $verification['success'],
+                'result' => $result,
+                'secret_starts_with' => substr($this->config->get('recaptcha.secret_key'), 0, 7) . '...',
+                'token_starts_with' => substr($token, 0, 10) . '...',
             ]);
 
-            foreach ($this->providerOrder() as $provider) {
-                Log::debug("VerifyReCaptcha: Attempting verification with provider: {$provider}");
-                
-                $verification = $this->verifyWithProvider($provider, $request);
-                $result = $verification['result'];
-
-                Log::debug("VerifyReCaptcha: Verification result for {$provider}", [
-                    'success' => $verification['success'],
-                    'result' => $result,
-                    'secret_starts_with' => substr($this->config->get('recaptcha.secret_key'), 0, 5) . '...',
-                ]);
-
-                if ($verification['success']) {
-                    return $next($request);
-                }
+            if ($verification['success'] === true) {
+                return $next($request);
             }
         } else {
-            Log::warning('VerifyReCaptcha: Validation required but no token found in request.', [
-                'headers' => $request->headers->all(),
+            Log::warning('VerifyReCaptcha: Validation required but no token found in request fields.', [
                 'input_keys' => array_keys($request->all()),
             ]);
         }
+
+        $this->dispatcher->dispatch(
+            new FailedCaptcha(
+                $request->ip(),
+                ''
+            )
+        );
+
+        throw new HttpException(Response::HTTP_BAD_REQUEST, 'Failed to validate CAPTCHA data.');
+    }
 
         $this->dispatcher->dispatch(
             new FailedCaptcha(
@@ -158,7 +165,6 @@ class VerifyReCaptcha
         $params = [
             'secret' => $this->config->get('recaptcha.secret_key'),
             'response' => $token,
-            'remoteip' => $request->ip(),
         ];
 
         return $params;
