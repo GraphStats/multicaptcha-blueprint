@@ -72,16 +72,6 @@ class VerifyReCaptcha
         throw new HttpException(Response::HTTP_BAD_REQUEST, 'Failed to validate CAPTCHA data.');
     }
 
-        $this->dispatcher->dispatch(
-            new FailedCaptcha(
-                $request->ip(),
-                (string) ($result->hostname ?? '')
-            )
-        );
-
-        throw new HttpException(Response::HTTP_BAD_REQUEST, 'Failed to validate CAPTCHA data.');
-    }
-
     private function providerOrder(): array
     {
         $primary = $this->resolveProvider();
