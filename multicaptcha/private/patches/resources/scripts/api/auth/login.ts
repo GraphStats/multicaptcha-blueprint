@@ -14,7 +14,7 @@ export default (data: { username: string; password: string; recaptchaData?: stri
             'g-recaptcha-response': data.recaptchaData,
             recaptchaData: data.recaptchaData,
         })
-            .then((response) => resolve(response.data.data))
+            .then((response: any) => resolve(response.data.data))
             .catch(reject);
     });
 };
