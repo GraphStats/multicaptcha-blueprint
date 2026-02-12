@@ -199,3 +199,4 @@ class VerifyReCaptcha
         return $providerHost === $requestHost;
     }
 }
+
