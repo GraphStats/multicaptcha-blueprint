@@ -9,6 +9,7 @@ export interface LoginResponse {
 export default (data: { username: string; password: string; recaptchaData?: string }): Promise<LoginResponse> => {
     return new Promise((resolve, reject) => {
         http.post('/auth/login', {
+            user: data.username,
             username: data.username,
             password: data.password,
             'g-recaptcha-response': data.recaptchaData,
