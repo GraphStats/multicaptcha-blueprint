@@ -149,15 +149,16 @@ class VerifyReCaptcha
     private function buildFormParams(string $provider, Request $request): array
     {
         $token = (string) (
-            $request->input('g-recaptcha-response')
+            $request->input('recaptchaData')
             ?? $request->input('cf-turnstile-response')
-            ?? $request->input('recaptchaData')
+            ?? $request->input('g-recaptcha-response')
             ?? ''
         );
 
         $params = [
             'secret' => $this->config->get('recaptcha.secret_key'),
             'response' => $token,
+            'remoteip' => $request->ip(),
         ];
 
         return $params;
